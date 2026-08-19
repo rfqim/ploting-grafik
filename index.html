@@ -3,169 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ploting Grafik</title>
+    <title>Eksplorasi Grafik & Titik Koordinat</title>
     <style>
-        * {
-            box-sizing: border-box;
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; padding: 10px; color: #333; 
+            display: flex; flex-direction: column; align-items: center; 
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f2f5;
-            padding: 10px; 
-            margin: 0;
-            color: #333;
+        .container { 
+            background: #ffffff; padding: 15px; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; width: 100%; 
         }
-        .container {
-            background: #ffffff;
-            padding: 15px; 
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
+        h2 { text-align: center; color: #1a73e8; font-size: 1.4rem; margin-top: 0; margin-bottom: 5px; }
+        .subtitle { text-align: center; font-size: 13px; color: #555; margin-bottom: 15px; }
+        .controls { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px; }
+        .control-full { grid-column: 1 / -1; }
+        label { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        select, input[type="range"] { 
+            width: 100%; font-size: 16px; padding: 10px; 
+            border: 1px solid #ccc; border-radius: 6px; 
         }
-        h2 {
-            text-align: center;
-            margin-top: 0;
-            color: #1a73e8;
-            font-size: 1.4rem;
-        }
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr; 
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .control-full {
-            grid-column: 1 / -1; 
-        }
-        label {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex; 
-            justify-content: space-between; 
-        }
-        select, input[type="range"] {
-            width: 100%;
-            font-size: 16px; 
-            padding: 10px; 
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #fff;
-        }
-        input[type="range"] {
-            padding: 0;
-            border: none;
-            height: 30px; 
-        }
-        .value-display {
-            font-weight: 400;
-            color: #d93025;
-        }
-        .formula-display {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px dashed #ccc;
-            overflow-x: auto; 
-            word-break: break-word;
+        input[type="range"] { padding: 0; border: none; height: 30px; }
+        .value-display { font-weight: 400; color: #d93025; }
+        .formula-display { 
+            text-align: center; font-size: 16px; font-weight: bold; 
+            background: #f8f9fa; padding: 12px; border-radius: 8px; 
+            margin-bottom: 15px; border: 1px dashed #ccc; overflow-x: auto; 
         }
         
-        .canvas-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            padding-bottom: 100%;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-            touch-action: none;
-        }
-
-        /* --- STYLING UNTUK TABEL KOORDINAT --- */
-        .table-container {
-            margin-top: 20px;
-            width: 100%;
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        .coord-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-            background: #ffffff;
-            font-size: 14px;
-        }
-        .coord-table th, .coord-table td {
-            border: 1px solid #e0e0e0;
-            padding: 6px 4px;
-            min-width: 45px;
-        }
-        .coord-table th {
-            background-color: #1a73e8;
-            color: white;
-            font-weight: 600;
-        }
-        .coord-table tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-
-        /* Styling khusus untuk input nilai X */
-        .x-input {
-            width: 100%;
-            min-width: 35px;
-            text-align: center;
-            font-size: 14px;
-            padding: 4px;
-            border: 1px solid #1a73e8;
-            border-radius: 4px;
-            background-color: #e8f0fe;
-            color: #1a73e8;
-            font-weight: bold;
-        }
-        .x-input:focus {
-            outline: none;
-            border-color: #d93025;
-            background-color: #fff;
+        .canvas-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto 15px auto; padding-bottom: 100%; }
+        canvas { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #ffffff; border: 2px solid #e0e0e0; border-radius: 8px; 
+            touch-action: none; cursor: grab; 
         }
         
-        /* Menghilangkan panah atas/bawah pada input number */
-        .x-input::-webkit-outer-spin-button,
-        .x-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .x-input[type=number] {
-            -moz-appearance: textfield;
-        }
-
+        .table-container { overflow-x: auto; margin-top: 10px;}
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th, td { border: 1px solid #ccc; padding: 8px; }
+        th { background-color: #f8f9fa; }
+        input.coord-input { width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px; padding: 4px; }
+        
         @media (min-width: 600px) {
             body { padding: 20px; }
-            .container { padding: 30px; }
+            .container { padding: 30px; max-width: 700px; }
             .controls { grid-template-columns: 1fr 1fr; }
-            h2 { font-size: 1.8rem; }
-            .formula-display { font-size: 18px; padding: 15px; }
             .canvas-container { padding-bottom: 0; height: 500px; }
-            .coord-table { font-size: 16px; }
-            .coord-table th, .coord-table td { padding: 10px 8px; }
-            .x-input { font-size: 16px; padding: 6px; }
         }
     </style>
 </head>
@@ -173,19 +58,22 @@
 
 <div class="container">
     <h2>Eksplorasi Grafik & Titik Koordinat</h2>
-    <p class="subtitle">Linear, Kuadrat, Rasional, Eksponensial, Mutlak, dan Tangga</p>
+    <div class="subtitle">
+        Linear, Kuadrat, Rasional, Eksponensial, Mutlak, dan Tangga<br><br>
+        <strong style="color:#d93025;">💡 Scroll (PC) atau Cubit (HP) pada grafik untuk Zoom</strong>
+    </div>
     
     <div class="controls">
         <div class="control-full">
-            <label for="funcType">Jenis Fungsi:</label>
+            <label>Jenis Fungsi:</label>
             <select id="funcType">
                 <option value="linear">Fungsi Linear (y = ax + b)</option>
                 <option value="quadratic">Fungsi Kuadrat (y = ax² + bx + c)</option>
                 <option value="rational">Fungsi Rasional (y = a / (x - b)ⁿ + c)</option>
                 <option value="exponential">Fungsi Eksponensial (y = a · e^(bx) + c)</option>
                 <option value="absolute">Fungsi Mutlak (y = a|x - b| + c)</option>
-                <option value="step-down">Fungsi Lantai (y = a⌊x - b⌋ + c)</option>
-                <option value="step-up">Fungsi Atap (y = a⌈x - b⌉ + c) </option>
+                <option value="step-down">Fungsi Lantai/Floor (y = a⌊x - b⌋ + c)</option>
+                <option value="step-up">Fungsi Atap/Ceil (y = a⌈x - b⌉ + c)</option>
             </select>
         </div>
         <div>
@@ -212,19 +100,12 @@
         <canvas id="graphCanvas" width="500" height="500"></canvas>
     </div>
 
-    <!-- Container Tabel Interaktif -->
     <div class="table-container">
-        <table class="coord-table" id="pointsTable">
-            <tr id="rowX">
-                <th>x</th>
-                <!-- Input X akan dibuat lewat JS -->
-            </tr>
-            <tr id="rowY">
-                <th>y</th>
-                <!-- Output Y akan dibuat lewat JS -->
-            </tr>
+        <table id="coordTable">
+            <tr id="rowX"><th>x</th></tr>
+            <tr id="rowY"><th>y</th></tr>
         </table>
-        <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">* Anda dapat mengetik angka (termasuk desimal) pada kolom X di atas.</p>
+        <p style="font-size: 12px; color: #666;">* Anda dapat mengetik angka (termasuk desimal) pada baris X di atas untuk melihat nilai Y.</p>
     </div>
 </div>
 
@@ -234,8 +115,9 @@
     const width = canvas.width; 
     const height = canvas.height; 
 
-    const range = 10;
-    const scale = width / (range * 2);
+    // Variabel untuk fitur ZOOM
+    let range = 10;
+    let scale = width / (range * 2);
 
     const funcType = document.getElementById('funcType');
     const inputA = document.getElementById('a');
@@ -247,224 +129,229 @@
     const valB = document.getElementById('valB');
     const valC = document.getElementById('valC');
     const valN = document.getElementById('valN');
+    
     const formulaDisplay = document.getElementById('formula');
     const cControl = document.getElementById('cControl');
     const nControl = document.getElementById('nControl');
 
-    // Variabel array untuk menyimpan nilai X (Bisa diedit oleh user)
-    let xPoints = [-3, -2, -1, 0, 1, 2, 3];
+    // --- SETUP TABEL KOORDINAT ---
+    const rowX = document.getElementById('rowX');
+    const rowY = document.getElementById('rowY');
+    const defaultXValues = [-2, -1, 0, 1, 2];
+    const xInputs = [];
 
-    // Fungsi inisialisasi tabel agar input tidak kerefresh/kehilangan fokus saat slider digeser
     function initTable() {
-        const rowX = document.getElementById('rowX');
-        const rowY = document.getElementById('rowY');
-
-        for (let i = 0; i < xPoints.length; i++) {
-            // Buat kolom input X
+        for (let i = 0; i < defaultXValues.length; i++) {
             let tdX = document.createElement('td');
             let inputX = document.createElement('input');
             inputX.type = 'number';
-            inputX.className = 'x-input';
-            inputX.value = xPoints[i];
-            
-            // Event listener saat user mengetik nilai x baru
-            inputX.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                xPoints[i] = val; // update nilai di array
-                drawGraph();      // render ulang fungsi & titik
-            });
-
+            inputX.className = 'coord-input';
+            inputX.value = defaultXValues[i];
+            inputX.addEventListener('input', updateTable);
+            xInputs.push(inputX);
             tdX.appendChild(inputX);
             rowX.appendChild(tdX);
 
-            // Buat kolom output Y
             let tdY = document.createElement('td');
-            tdY.id = `yVal${i}`;
-            tdY.textContent = '-';
+            tdY.id = 'y-val-' + i;
             rowY.appendChild(tdY);
         }
     }
+    initTable();
 
-    // Fungsi matematika untuk menghitung Y
-    function hitungY(x, type, a, b, c, n) {
-        if (type === 'linear') {
-            return (a * x) + b;
-        } else if (type === 'quadratic') {
-            return (a * Math.pow(x, 2)) + (b * x) + c;
-        } else if (type === 'rational') {
-            if (x === b) return 'undf'; // Asimtot tegak
-            return (a / Math.pow((x - b), n)) + c;
-        } else if (type === 'exponential') {
-            return (Math.pow(a, b * x)) + c;
-        } else if (type === 'absolute') {
-            return (a * Math.abs(x - b)) + c;
-        } else if (type === 'step-down') {
-            return (a * Math.floor(x - b)) + c;
-        } else if (type === 'step-up') {
-            return (a * Math.ceil(x - b)) + c;
+    // Fungsi matematika terpusat (agar bisa dipakai tabel & grafik)
+    function calculateY(mathX, type, a, b, c, n) {
+        if (type === 'linear') return a * mathX + b;
+        if (type === 'quadratic') return a * Math.pow(mathX, 2) + b * mathX + c;
+        if (type === 'rational') {
+            if (Math.abs(mathX - b) === 0) return null; // Mencegah bagi nol (asimtot)
+            return a / Math.pow((mathX - b), n) + c;
         }
+        if (type === 'exponential') return a * Math.exp(b * mathX) + c;
+        if (type === 'absolute') return a * Math.abs(mathX - b) + c;
+        if (type === 'step-down') return a * Math.floor(mathX - b) + c;
+        if (type === 'step-up') return a * Math.ceil(mathX - b) + c;
         return null;
     }
 
-    function drawGraph() {
+    function updateTable() {
         const type = funcType.value;
         const a = parseFloat(inputA.value);
         const b = parseFloat(inputB.value);
         const c = parseFloat(inputC.value);
         const n = parseInt(inputN.value);
 
-        valA.textContent = a;
-        valB.textContent = b;
-        valC.textContent = c;
-        valN.textContent = n;
+        xInputs.forEach((input, index) => {
+            const mathX = parseFloat(input.value);
+            const tdY = document.getElementById('y-val-' + index);
+            if (isNaN(mathX)) {
+                tdY.textContent = '-';
+            } else {
+                let y = calculateY(mathX, type, a, b, c, n);
+                tdY.textContent = y === null ? '∞' : (Number.isInteger(y) ? y : y.toFixed(2));
+            }
+        });
+    }
 
+    function drawGraph() {
+        scale = width / (range * 2); // Update skala saat di zoom
+        const type = funcType.value;
+        const a = parseFloat(inputA.value);
+        const b = parseFloat(inputB.value);
+        const c = parseFloat(inputC.value);
+        const n = parseInt(inputN.value);
+
+        valA.textContent = a; valB.textContent = b; valC.textContent = c; valN.textContent = n;
+
+        // UI Tampilan Rumus
         if (type === 'linear') {
-            cControl.style.display = 'none';
-            nControl.style.display = 'none';
+            cControl.style.display = 'none'; nControl.style.display = 'none';
             formulaDisplay.innerHTML = `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`;
         } else if (type === 'quadratic') {
-            cControl.style.display = 'block';
-            nControl.style.display = 'none';
+            cControl.style.display = 'block'; nControl.style.display = 'none';
             formulaDisplay.innerHTML = `y = ${a}x² ${b >= 0 ? '+' : '-'} ${Math.abs(b)}x ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         } else if (type === 'rational') {
-            cControl.style.display = 'block';
-            nControl.style.display = 'block'; 
+            cControl.style.display = 'block'; nControl.style.display = 'block'; 
             formulaDisplay.innerHTML = `y = ${a} / (x ${b >= 0 ? '-' : '+'} ${Math.abs(b)})<sup>${n}</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         } else if (type === 'exponential') {
-            cControl.style.display = 'block';
-            nControl.style.display = 'none';
-            formulaDisplay.innerHTML = `y = ${a}e<sup>${b}x</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+            cControl.style.display = 'block'; nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a} · e<sup>${b}x</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         } else if (type === 'absolute') {
-            cControl.style.display = 'block';
-            nControl.style.display = 'none';
-            formulaDisplay.innerHTML = `y = ${a}|x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}| ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+            cControl.style.display = 'block'; nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a} |x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}| ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         } else if (type === 'step-down') {
-            cControl.style.display = 'block';
-            nControl.style.display = 'none';
-            formulaDisplay.innerHTML = `y = ${a}⌊x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌋ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+            cControl.style.display = 'block'; nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a} ⌊x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌋ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         } else if (type === 'step-up') {
-            cControl.style.display = 'block';
-            nControl.style.display = 'none';
-            formulaDisplay.innerHTML = `y = ${a}⌈x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌉ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+            cControl.style.display = 'block'; nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a} ⌈x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌉ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         }
 
         ctx.clearRect(0, 0, width, height);
-        drawAxes();
+        drawAxes(); // Gambar Sumbu & Angka
 
-        // 1. Gambar Garis Fungsi
         ctx.beginPath();
         ctx.strokeStyle = '#1a73e8'; 
         ctx.lineWidth = 3;
+
         let prevY = null;
-        let prevStep = null;
+        let prevMathY = null;
 
         for (let px = 0; px <= width; px++) {
             const mathX = (px / scale) - range;
-            let mathY = null;
-
-            if (type === 'linear') {
-                mathY = a * mathX + b;
-            } else if (type === 'quadratic') {
-                mathY = a * Math.pow(mathX, 2) + b * mathX + c;
-            } else if (type === 'rational') {
-                if (Math.abs(mathX - b) <= 0.05) { // Skip garis di dekat asimtot agar tidak ditarik vertikal
-                    prevY = null;
-                    continue;
-                }
-                mathY = a / Math.pow((mathX - b), n) + c;
-            } else if (type === 'exponential') {
-                mathY = a * Math.exp(b * mathX) + c;
-            } else if (type === 'absolute') {
-                mathY = a * Math.abs(mathX - b) + c;
-            } else if (type === 'step-down' || type === 'step-up') {
-                let currentStep = (type === 'step-down') ? Math.floor(mathX - b) : Math.ceil(mathX - b);
-                // Putuskan garis saat nilai tangga berubah agar tidak muncul garis vertikal
-                if (prevStep !== null && currentStep !== prevStep) {
-                    prevY = null;
-                }
-                prevStep = currentStep;
-                mathY = a * currentStep + c;
-            }
+            let mathY = calculateY(mathX, type, a, b, c, n);
 
             if (mathY !== null) {
-                const py = height / 2 - (mathY * scale);
+                // Memutus garis jika terjadi lompatan ekstrem (Misal pada fungsi Floor/Tangga atau Asimtot)
+                if (prevMathY !== null && Math.abs(mathY - prevMathY) > range) {
+                    prevY = null; 
+                }
 
+                const py = height / 2 - (mathY * scale);
                 if (px === 0 || prevY === null) {
                     ctx.moveTo(px, py); 
                 } else {
                     ctx.lineTo(px, py); 
                 }
                 prevY = py;
+                prevMathY = mathY;
+            } else {
+                prevY = null;
+                prevMathY = null;
             }
         }
         ctx.stroke();
-
-        // 2. Kalkulasi Y untuk Tabel & Gambar Titik Tebal di Canvas
-        for (let i = 0; i < xPoints.length; i++) {
-            let x = xPoints[i];
-            let tdY = document.getElementById(`yVal${i}`);
-            
-            // Jika user menghapus input, kosongi hasil dan lewati
-            if (isNaN(x)) {
-                tdY.textContent = '-';
-                continue;
-            }
-
-            let y = hitungY(x, type, a, b, c, n);
-
-            // Update isi tabel Y
-            if (y === '∞') {
-                tdY.textContent = '∞';
-            } else {
-                // Format maksimal 2 desimal
-                tdY.textContent = Number.isInteger(y) ? y : parseFloat(y.toFixed(2));
-
-                // Gambar titik pada grafik
-                let canvasX = (x + range) * scale;
-                let canvasY = height / 2 - (y * scale);
-
-                // Pastikan titik digambar hanya jika berada di area aman kalkulasi (bukan NaN)
-                if (isFinite(y)) {
-                    ctx.beginPath();
-                    ctx.arc(canvasX, canvasY, 6, 0, 2 * Math.PI); // Radius titik 6px
-                    ctx.fillStyle = '#d93025'; // Warna titik merah tebal
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff'; // Border putih agar mencolok
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-            }
-        }
+        updateTable(); // Update angka di tabel koordinat
     }
 
     function drawAxes() {
-        ctx.strokeStyle = '#e0e0e0';
         ctx.lineWidth = 1;
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-        for (let i = -range; i <= range; i++) {
-            const p = (i + range) * scale;
-            ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, height); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(width, p); ctx.stroke();
+        // Logika agar angka sumbu tidak menumpuk saat di zoom
+        let step = 1;
+        if (range > 50) step = 10;
+        else if (range > 20) step = 5;
+        else if (range > 10) step = 2;
+        else if (range < 3) step = 0.5;
+
+        let startVal = Math.floor(-range);
+        let endVal = Math.ceil(range);
+
+        for (let i = startVal; i <= endVal; i += step) {
+            const pos = (i + range) * scale;
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.beginPath(); ctx.moveTo(pos, 0); ctx.lineTo(pos, height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, pos); ctx.lineTo(width, pos); ctx.stroke();
+
+            // Memunculkan Angka
+            if (i !== 0) {
+                ctx.fillStyle = '#666666';
+                let textVal = Number.isInteger(i) ? i : i.toFixed(1);
+                ctx.fillText(textVal, pos, height / 2 + 15); // Angka sumbu X
+                const posY = height / 2 - (i * scale);
+                ctx.fillText(textVal, width / 2 - 15, posY); // Angka sumbu Y
+            }
         }
 
         ctx.strokeStyle = '#333333';
         ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
         
-        ctx.beginPath(); ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height); ctx.stroke(); // Y
-        ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); // X
+        ctx.fillStyle = '#333333';
+        ctx.fillText('0', width / 2 - 10, height / 2 + 15);
     }
 
-    // Event listeners untuk slider
+    // --- FITUR ZOOM (MOUSE SCROLL - KOMPUTER) ---
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault(); 
+        const zoomSensitivity = 0.1;
+        const zoomFactor = e.deltaY > 0 ? (1 + zoomSensitivity) : (1 - zoomSensitivity);
+        range *= zoomFactor;
+        if (range < 1) range = 1; // Batas zoom in
+        if (range > 100) range = 100; // Batas zoom out
+        drawGraph();
+    });
+
+    // --- FITUR ZOOM (PINCH/CUBIT - HP) ---
+    let initialPinchDistance = null;
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            initialPinchDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        }
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && initialPinchDistance !== null) {
+            e.preventDefault(); 
+            const currentDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            const zoomFactor = initialPinchDistance / currentDistance;
+            range *= zoomFactor;
+            if (range < 1) range = 1;
+            if (range > 100) range = 100;
+            initialPinchDistance = currentDistance;
+            drawGraph();
+        }
+    });
+
+    canvas.addEventListener('touchend', () => { initialPinchDistance = null; });
+
     funcType.addEventListener('change', drawGraph);
     inputA.addEventListener('input', drawGraph);
     inputB.addEventListener('input', drawGraph);
     inputC.addEventListener('input', drawGraph);
     inputN.addEventListener('input', drawGraph);
 
-    // Jalankan
-    initTable();
     drawGraph();
 </script>
-
 </body>
 </html>
