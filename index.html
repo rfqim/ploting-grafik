@@ -23,7 +23,7 @@
             padding: 15px; 
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-width: 600px; /* Lebar default untuk mobile */
+            max-width: 600px;
             width: 100%;
         }
         h2 {
@@ -64,6 +64,7 @@
             margin-bottom: 8px;
             display: flex; 
             justify-content: space-between; 
+            align-items: center; /* Memastikan teks dan input sejajar vertikal */
         }
         select, input[type="range"] {
             width: 100%;
@@ -77,11 +78,27 @@
             padding: 0;
             border: none;
             height: 30px; 
+            cursor: pointer;
         }
-        .value-display {
-            font-weight: 400;
+        
+        /* Input Angka untuk Koefisien */
+        .num-input {
+            width: 70px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
             color: #d93025;
+            border: 1px solid #1a73e8;
+            border-radius: 4px;
+            padding: 4px;
+            background-color: #e8f0fe;
         }
+        .num-input:focus {
+            outline: none;
+            border-color: #d93025;
+            background-color: #fff;
+        }
+
         .formula-display {
             text-align: center;
             font-size: 16px;
@@ -99,7 +116,7 @@
         .canvas-container {
             position: relative;
             width: 100%;
-            aspect-ratio: 1 / 1; /* Membuat kotak selalu presisi (persegi) */
+            aspect-ratio: 1 / 1; 
             border-radius: 8px;
             overflow: hidden; 
             margin: 0 auto;
@@ -182,42 +199,20 @@
            MODE DESKTOP (Layar Lebar di atas 850px) 
            ======================================================= */
         @media (min-width: 850px) {
-            body { 
-                padding: 30px; 
-            }
-            .container { 
-                padding: 30px; 
-                max-width: 1100px; /* Melebarkan kontainer utama */
-            }
-            h2 { 
-                font-size: 1.8rem; 
-            }
-            
-            /* Mengubah layout menjadi Kiri & Kanan dengan CSS Grid */
+            body { padding: 30px; }
+            .container { padding: 30px; max-width: 1100px; }
+            h2 { font-size: 1.8rem; }
             .main-layout {
                 display: grid;
-                grid-template-columns: 4fr 5fr; /* Proporsi: Kiri 40%, Kanan 60% */
+                grid-template-columns: 4fr 5fr;
                 gap: 30px;
                 align-items: start;
             }
-
-            .controls { 
-                grid-template-columns: 1fr 1fr; /* Slider dibagi 2 kolom agar hemat tempat */
-            }
-            .formula-display { 
-                font-size: 18px; 
-                padding: 15px; 
-            }
-            .coord-table { 
-                font-size: 16px; 
-            }
-            .coord-table th, .coord-table td { 
-                padding: 10px 8px; 
-            }
-            .x-input { 
-                font-size: 16px; 
-                padding: 6px; 
-            }
+            .controls { grid-template-columns: 1fr 1fr; }
+            .formula-display { font-size: 18px; padding: 15px; }
+            .coord-table { font-size: 16px; }
+            .coord-table th, .coord-table td { padding: 10px 8px; }
+            .x-input { font-size: 16px; padding: 6px; }
         }
     </style>
 </head>
@@ -227,10 +222,9 @@
     <h2>Eksplorasi Grafik & Titik Koordinat</h2>
     <p class="subtitle">Linear, Kuadrat, Rasional, Eksponensial, Mutlak, dan Tangga</p>
     
-    <!-- Wrapper Utama Layout -->
     <div class="main-layout">
         
-        <!-- PANEL KIRI: Menu, Rumus, dan Tabel -->
+        <!-- PANEL KIRI -->
         <div class="left-panel">
             <div class="controls">
                 <div class="control-full">
@@ -245,20 +239,21 @@
                         <option value="step-up">Fungsi Atap (y = a⌈x - b⌉ + c) </option>
                     </select>
                 </div>
+                <!-- Koefisien sekarang bisa diketik dan dislider -->
                 <div>
-                    <label>Koefisien a: <span id="valA" class="value-display">1</span></label>
+                    <label>Koefisien a: <input type="number" id="valA" class="num-input" value="1" step="0.1"></label>
                     <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
                 </div>
                 <div>
-                    <label>Koefisien b: <span id="valB" class="value-display">0</span></label>
+                    <label>Koefisien b: <input type="number" id="valB" class="num-input" value="0" step="0.1"></label>
                     <input type="range" id="b" min="-5" max="5" step="0.1" value="0">
                 </div>
                 <div id="cControl" style="display: none;">
-                    <label>Koefisien c: <span id="valC" class="value-display">0</span></label>
+                    <label>Koefisien c: <input type="number" id="valC" class="num-input" value="0" step="0.1"></label>
                     <input type="range" id="c" min="-5" max="5" step="0.1" value="0">
                 </div>
                 <div id="nControl" style="display: none;">
-                    <label>Pangkat n: <span id="valN" class="value-display">1</span></label>
+                    <label>Pangkat n: <input type="number" id="valN" class="num-input" value="1" step="1" min="1"></label>
                     <input type="range" id="n" min="1" max="5" step="1" value="1">
                 </div>
             </div>
@@ -278,10 +273,9 @@
             </div>
         </div>
         
-        <!-- PANEL KANAN: Kanvas Grafik -->
+        <!-- PANEL KANAN -->
         <div class="right-panel">
             <div class="canvas-container">
-                <!-- Resolusi internal canvas tetap 500x500 agar grafis tajam, sementara ukurannya responsif karena CSS -->
                 <canvas id="graphCanvas" width="500" height="500"></canvas>
             </div>
             <p class="zoom-hint">💡 Gunakan dua jari (cubit) atau scroll mouse di dalam kotak untuk Zoom In/Out</p>
@@ -301,24 +295,50 @@
     let scale; 
     let initialPinchDistance = null;
     let initialRange = range;
-    const MIN_RANGE = 2;   // Batas maksimal zoom-in
-    const MAX_RANGE = 100; // Batas maksimal zoom-out
+    const MIN_RANGE = 2;   
+    const MAX_RANGE = 100; 
 
     const funcType = document.getElementById('funcType');
-    const inputA = document.getElementById('a');
-    const inputB = document.getElementById('b');
-    const inputC = document.getElementById('c');
-    const inputN = document.getElementById('n'); 
     
+    // Elemen Input Angka Ketik
     const valA = document.getElementById('valA');
     const valB = document.getElementById('valB');
     const valC = document.getElementById('valC');
     const valN = document.getElementById('valN');
+    
     const formulaDisplay = document.getElementById('formula');
     const cControl = document.getElementById('cControl');
     const nControl = document.getElementById('nControl');
 
     let xPoints = [-3, -2, -1, 0, 1, 2, 3];
+
+    // Fungsi untuk Sinkronisasi antara Slider dan Input Ketik
+    function syncControl(sliderId, numId) {
+        const slider = document.getElementById(sliderId);
+        const numInput = document.getElementById(numId);
+        
+        // Jika Slider digeser -> update Input Ketik
+        slider.addEventListener('input', () => {
+            numInput.value = slider.value;
+            drawGraph();
+        });
+        
+        // Jika Input diketik -> update Slider (jika masuk range)
+        numInput.addEventListener('input', () => {
+            if (numInput.value !== "") {
+                slider.value = numInput.value;
+            }
+            drawGraph();
+        });
+    }
+
+    // Terapkan sinkronisasi ke keempat kontrol
+    syncControl('a', 'valA');
+    syncControl('b', 'valB');
+    syncControl('c', 'valC');
+    syncControl('n', 'valN');
+
+    funcType.addEventListener('change', drawGraph);
 
     function initTable() {
         const rowX = document.getElementById('rowX');
@@ -408,12 +428,12 @@
         scale = width / (range * 2);
 
         const type = funcType.value;
-        const a = parseFloat(inputA.value);
-        const b = parseFloat(inputB.value);
-        const c = parseFloat(inputC.value);
-        const n = parseInt(inputN.value);
-
-        valA.textContent = a; valB.textContent = b; valC.textContent = c; valN.textContent = n;
+        
+        // Membaca nilai dari Input Ketik (Jika kosong atau error, otomatis 0 agar grafik tidak error)
+        const a = parseFloat(valA.value) || 0;
+        const b = parseFloat(valB.value) || 0;
+        const c = parseFloat(valC.value) || 0;
+        const n = parseInt(valN.value) || 1;
 
         if (type === 'linear') {
             cControl.style.display = 'none'; nControl.style.display = 'none';
@@ -553,12 +573,6 @@
             initialPinchDistance = null; 
         }
     });
-
-    funcType.addEventListener('change', drawGraph);
-    inputA.addEventListener('input', drawGraph);
-    inputB.addEventListener('input', drawGraph);
-    inputC.addEventListener('input', drawGraph);
-    inputN.addEventListener('input', drawGraph);
 
     initTable();
     drawGraph();
