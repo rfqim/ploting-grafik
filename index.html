@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eksplorasi Grafik Fungsi & Titik Kustom</title>
+    <title>Eksplorasi Grafik Fungsi & Titik</title>
     <style>
         * {
             box-sizing: border-box;
@@ -48,7 +48,7 @@
             display: flex; 
             justify-content: space-between; 
         }
-        select, input[type="range"], input[type="number"] {
+        select, input[type="range"] {
             width: 100%;
             font-size: 16px; 
             padding: 10px; 
@@ -72,20 +72,10 @@
             background: #f8f9fa;
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border: 1px dashed #ccc;
             overflow-x: auto; 
             word-break: break-word;
-        }
-        .point-info {
-            text-align: center;
-            font-size: 14px;
-            background: #e8f0fe;
-            color: #1a73e8;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-weight: 600;
         }
         
         .canvas-container {
@@ -108,7 +98,7 @@
             touch-action: none;
         }
 
-        /* --- STYLING TABEL KOORDINAT --- */
+        /* --- STYLING UNTUK TABEL KOORDINAT --- */
         .table-container {
             margin-top: 20px;
             width: 100%;
@@ -125,7 +115,7 @@
         }
         .coord-table th, .coord-table td {
             border: 1px solid #e0e0e0;
-            padding: 10px 5px;
+            padding: 6px 4px;
             min-width: 45px;
         }
         .coord-table th {
@@ -137,6 +127,35 @@
             background-color: #f8f9fa;
         }
 
+        /* Styling khusus untuk input nilai X */
+        .x-input {
+            width: 100%;
+            min-width: 35px;
+            text-align: center;
+            font-size: 14px;
+            padding: 4px;
+            border: 1px solid #1a73e8;
+            border-radius: 4px;
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            font-weight: bold;
+        }
+        .x-input:focus {
+            outline: none;
+            border-color: #d93025;
+            background-color: #fff;
+        }
+        
+        /* Menghilangkan panah atas/bawah pada input number */
+        .x-input::-webkit-outer-spin-button,
+        .x-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .x-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
         @media (min-width: 600px) {
             body { padding: 20px; }
             .container { padding: 30px; }
@@ -145,14 +164,15 @@
             .formula-display { font-size: 18px; padding: 15px; }
             .canvas-container { padding-bottom: 0; height: 500px; }
             .coord-table { font-size: 16px; }
-            .coord-table th, .coord-table td { padding: 12px 8px; }
+            .coord-table th, .coord-table td { padding: 10px 8px; }
+            .x-input { font-size: 16px; padding: 6px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Alat Pembuat Grafik Fungsi</h2>
+    <h2>Eksplorasi Grafik & Titik Koordinat</h2>
     
     <div class="controls">
         <div class="control-full">
@@ -179,22 +199,28 @@
             <label>Pangkat n: <span id="valN" class="value-display">1</span></label>
             <input type="range" id="n" min="1" max="5" step="1" value="1">
         </div>
-        <!-- Input Kustom X oleh User -->
-        <div class="control-full">
-            <label for="customX">Uji Titik x Kustom: <span id="valCustomX" class="value-display">0</span></label>
-            <input type="number" id="customX" value="0" step="0.1" min="-10" max="10">
-        </div>
     </div>
 
     <div class="formula-display" id="formula">y = 1x + 0</div>
-    <div class="point-info" id="pointInfo">Hasil Titik: (0, 0)</div>
 
     <div class="canvas-container">
         <canvas id="graphCanvas" width="500" height="500"></canvas>
     </div>
 
-    <!-- Container Tabel Koordinat -->
-    <div class="table-container" id="tableContainer"></div>
+    <!-- Container Tabel Interaktif -->
+    <div class="table-container">
+        <table class="coord-table" id="pointsTable">
+            <tr id="rowX">
+                <th>x</th>
+                <!-- Input X akan dibuat lewat JS -->
+            </tr>
+            <tr id="rowY">
+                <th>y</th>
+                <!-- Output Y akan dibuat lewat JS -->
+            </tr>
+        </table>
+        <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">* Anda dapat mengetik angka (termasuk desimal) pada kolom X di atas.</p>
+    </div>
 </div>
 
 <script>
@@ -211,30 +237,60 @@
     const inputB = document.getElementById('b');
     const inputC = document.getElementById('c');
     const inputN = document.getElementById('n'); 
-    const inputCustomX = document.getElementById('customX');
     
     const valA = document.getElementById('valA');
     const valB = document.getElementById('valB');
     const valC = document.getElementById('valC');
     const valN = document.getElementById('valN');
-    const valCustomX = document.getElementById('valCustomX');
-    
     const formulaDisplay = document.getElementById('formula');
-    const pointInfo = document.getElementById('pointInfo');
     const cControl = document.getElementById('cControl');
     const nControl = document.getElementById('nControl');
-    const tableContainer = document.getElementById('tableContainer');
 
-    function calculateY(x, type, a, b, c, n) {
+    // Variabel array untuk menyimpan nilai X (Bisa diedit oleh user)
+    let xPoints = [-3, -2, -1, 0, 1, 2, 3];
+
+    // Fungsi inisialisasi tabel agar input tidak kerefresh/kehilangan fokus saat slider digeser
+    function initTable() {
+        const rowX = document.getElementById('rowX');
+        const rowY = document.getElementById('rowY');
+
+        for (let i = 0; i < xPoints.length; i++) {
+            // Buat kolom input X
+            let tdX = document.createElement('td');
+            let inputX = document.createElement('input');
+            inputX.type = 'number';
+            inputX.className = 'x-input';
+            inputX.value = xPoints[i];
+            
+            // Event listener saat user mengetik nilai x baru
+            inputX.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                xPoints[i] = val; // update nilai di array
+                drawGraph();      // render ulang fungsi & titik
+            });
+
+            tdX.appendChild(inputX);
+            rowX.appendChild(tdX);
+
+            // Buat kolom output Y
+            let tdY = document.createElement('td');
+            tdY.id = `yVal${i}`;
+            tdY.textContent = '-';
+            rowY.appendChild(tdY);
+        }
+    }
+
+    // Fungsi matematika untuk menghitung Y
+    function hitungY(x, type, a, b, c, n) {
         if (type === 'linear') {
             return (a * x) + b;
         } else if (type === 'quadratic') {
             return (a * Math.pow(x, 2)) + (b * x) + c;
         } else if (type === 'rational') {
-            if (Math.abs(x - b) <= 0.001) return '∞';
+            if (x === b) return '∞'; // Asimtot tegak
             return (a / Math.pow((x - b), n)) + c;
         }
-        return 0;
+        return null;
     }
 
     function drawGraph() {
@@ -243,15 +299,11 @@
         const b = parseFloat(inputB.value);
         const c = parseFloat(inputC.value);
         const n = parseInt(inputN.value);
-        let customX = parseFloat(inputCustomX.value);
-
-        if (isNaN(customX)) customX = 0;
 
         valA.textContent = a;
         valB.textContent = b;
         valC.textContent = c;
         valN.textContent = n;
-        valCustomX.textContent = customX;
 
         if (type === 'linear') {
             cControl.style.display = 'none';
@@ -267,20 +319,13 @@
             formulaDisplay.innerHTML = `y = ${a} / (x ${b >= 0 ? '-' : '+'} ${Math.abs(b)})<sup>${n}</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         }
 
-        // Update Tabel Koordinat
-        updateTable(type, a, b, c, n);
-
-        // 1. Bersihkan Canvas
         ctx.clearRect(0, 0, width, height);
-
-        // 2. Gambar Grid & Sumbu
         drawAxes();
 
-        // 3. Gambar Garis Fungsi
+        // 1. Gambar Garis Fungsi
         ctx.beginPath();
         ctx.strokeStyle = '#1a73e8'; 
         ctx.lineWidth = 3;
-
         let prevY = null;
 
         for (let px = 0; px <= width; px++) {
@@ -292,7 +337,7 @@
             } else if (type === 'quadratic') {
                 mathY = a * Math.pow(mathX, 2) + b * mathX + c;
             } else if (type === 'rational') {
-                if (Math.abs(mathX - b) <= 0.05) {
+                if (Math.abs(mathX - b) <= 0.05) { // Skip garis di dekat asimtot agar tidak ditarik vertikal
                     prevY = null;
                     continue;
                 }
@@ -312,27 +357,41 @@
         }
         ctx.stroke();
 
-        // 4. Gambar Titik Tebal dari Input Kustom User
-        let customY = calculateY(customX, type, a, b, c, n);
-        
-        if (customY === '∞' || isNaN(customY)) {
-            pointInfo.textContent = `Hasil Titik: x = ${customX} (Nilai y Tak Terhingga / Asimtot)`;
-        } else {
-            let displayY = Number.isInteger(customY) ? customY : parseFloat(customY.toFixed(2));
-            pointInfo.textContent = `Hasil Titik Kustom: (${customX}, ${displayY})`;
+        // 2. Kalkulasi Y untuk Tabel & Gambar Titik Tebal di Canvas
+        for (let i = 0; i < xPoints.length; i++) {
+            let x = xPoints[i];
+            let tdY = document.getElementById(`yVal${i}`);
+            
+            // Jika user menghapus input, kosongi hasil dan lewati
+            if (isNaN(x)) {
+                tdY.textContent = '-';
+                continue;
+            }
 
-            // Koordinat kanvas untuk titik kustom
-            const dotPx = (customX + range) * scale;
-            const dotPy = height / 2 - (customY * scale);
+            let y = hitungY(x, type, a, b, c, n);
 
-            // Gambar titik tebal merah dengan lingkaran luar putih
-            ctx.beginPath();
-            ctx.arc(dotPx, dotPy, 7, 0, Math.PI * 2);
-            ctx.fillStyle = '#d93025'; // Warna merah terang
-            ctx.fill();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#ffffff';
-            ctx.stroke();
+            // Update isi tabel Y
+            if (y === '∞') {
+                tdY.textContent = '∞';
+            } else {
+                // Format maksimal 2 desimal
+                tdY.textContent = Number.isInteger(y) ? y : parseFloat(y.toFixed(2));
+
+                // Gambar titik pada grafik
+                let canvasX = (x + range) * scale;
+                let canvasY = height / 2 - (y * scale);
+
+                // Pastikan titik digambar hanya jika berada di area aman kalkulasi (bukan NaN)
+                if (isFinite(y)) {
+                    ctx.beginPath();
+                    ctx.arc(canvasX, canvasY, 6, 0, 2 * Math.PI); // Radius titik 6px
+                    ctx.fillStyle = '#d93025'; // Warna titik merah tebal
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff'; // Border putih agar mencolok
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
         }
     }
 
@@ -353,39 +412,15 @@
         ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); // X
     }
 
-    function updateTable(type, a, b, c, n) {
-        const xValues = [-3, -2, -1, 0, 1, 2, 3];
-        
-        let html = '<table class="coord-table"><tbody>';
-        
-        html += '<tr><th>x</th>';
-        for (let x of xValues) {
-            html += `<td>${x}</td>`;
-        }
-        html += '</tr>';
-        
-        html += '<tr><th>y</th>';
-        for (let x of xValues) {
-            let y = calculateY(x, type, a, b, c, n);
-            let displayY = y;
-            if (typeof y === 'number') {
-                displayY = Number.isInteger(y) ? y : parseFloat(y.toFixed(2));
-            }
-            html += `<td>${displayY}</td>`;
-        }
-        html += '</tr></tbody></table>';
-        
-        tableContainer.innerHTML = html;
-    }
-
-    // Event listeners
+    // Event listeners untuk slider
     funcType.addEventListener('change', drawGraph);
     inputA.addEventListener('input', drawGraph);
     inputB.addEventListener('input', drawGraph);
     inputC.addEventListener('input', drawGraph);
     inputN.addEventListener('input', drawGraph);
-    inputCustomX.addEventListener('input', drawGraph);
 
+    // Jalankan
+    initTable();
     drawGraph();
 </script>
 
