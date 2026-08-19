@@ -549,7 +549,7 @@
             let y = hitungY(x, type, a, b, c, n);
 
             if (y === 'undf') {
-                tdY.textContent = '∞';
+                tdY.textContent = 'tak terdefinisi';
             } else {
                 tdY.textContent = Number.isInteger(y) ? y : parseFloat(y.toFixed(2));
 
