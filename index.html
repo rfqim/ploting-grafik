@@ -23,7 +23,7 @@
             padding: 15px; 
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 600px; /* Lebar default untuk mobile */
             width: 100%;
         }
         h2 {
@@ -40,6 +40,15 @@
             margin-bottom: 20px;
             text-align: center;
         }
+        
+        /* --- WRAPPER LAYOUT UTAMA --- */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- KONTROL & MENU --- */
         .controls {
             display: grid;
             grid-template-columns: 1fr; 
@@ -80,20 +89,20 @@
             background: #f8f9fa;
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px dashed #ccc;
             overflow-x: auto; 
             word-break: break-word;
         }
         
+        /* --- GRAFIK (CANVAS) --- */
         .canvas-container {
             position: relative;
             width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            padding-bottom: 100%;
+            aspect-ratio: 1 / 1; /* Membuat kotak selalu presisi (persegi) */
             border-radius: 8px;
-            overflow: hidden; /* Mencegah elemen keluar batas */
+            overflow: hidden; 
+            margin: 0 auto;
         }
         canvas {
             position: absolute;
@@ -105,7 +114,6 @@
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-            /* Mematikan fungsi scroll layar bawaan saat menyentuh kanvas agar bisa zoom */
             touch-action: none; 
             cursor: grab;
         }
@@ -113,12 +121,11 @@
             text-align: center;
             font-size: 12px;
             color: #888;
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
         /* --- STYLING UNTUK TABEL KOORDINAT --- */
         .table-container {
-            margin-top: 15px;
             width: 100%;
             overflow-x: auto;
             border-radius: 8px;
@@ -162,7 +169,6 @@
             border-color: #d93025;
             background-color: #fff;
         }
-        
         .x-input::-webkit-outer-spin-button,
         .x-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -172,16 +178,46 @@
             -moz-appearance: textfield;
         }
 
-        @media (min-width: 600px) {
-            body { padding: 20px; }
-            .container { padding: 30px; }
-            .controls { grid-template-columns: 1fr 1fr; }
-            h2 { font-size: 1.8rem; }
-            .formula-display { font-size: 18px; padding: 15px; }
-            .canvas-container { padding-bottom: 0; height: 500px; }
-            .coord-table { font-size: 16px; }
-            .coord-table th, .coord-table td { padding: 10px 8px; }
-            .x-input { font-size: 16px; padding: 6px; }
+        /* =======================================================
+           MODE DESKTOP (Layar Lebar di atas 850px) 
+           ======================================================= */
+        @media (min-width: 850px) {
+            body { 
+                padding: 30px; 
+            }
+            .container { 
+                padding: 30px; 
+                max-width: 1100px; /* Melebarkan kontainer utama */
+            }
+            h2 { 
+                font-size: 1.8rem; 
+            }
+            
+            /* Mengubah layout menjadi Kiri & Kanan dengan CSS Grid */
+            .main-layout {
+                display: grid;
+                grid-template-columns: 4fr 5fr; /* Proporsi: Kiri 40%, Kanan 60% */
+                gap: 30px;
+                align-items: start;
+            }
+
+            .controls { 
+                grid-template-columns: 1fr 1fr; /* Slider dibagi 2 kolom agar hemat tempat */
+            }
+            .formula-display { 
+                font-size: 18px; 
+                padding: 15px; 
+            }
+            .coord-table { 
+                font-size: 16px; 
+            }
+            .coord-table th, .coord-table td { 
+                padding: 10px 8px; 
+            }
+            .x-input { 
+                font-size: 16px; 
+                padding: 6px; 
+            }
         }
     </style>
 </head>
@@ -191,55 +227,66 @@
     <h2>Eksplorasi Grafik & Titik Koordinat</h2>
     <p class="subtitle">Linear, Kuadrat, Rasional, Eksponensial, Mutlak, dan Tangga</p>
     
-    <div class="controls">
-        <div class="control-full">
-            <label for="funcType">Jenis Fungsi:</label>
-            <select id="funcType">
-                <option value="linear">Fungsi Linear (y = ax + b)</option>
-                <option value="quadratic">Fungsi Kuadrat (y = ax² + bx + c)</option>
-                <option value="rational">Fungsi Rasional (y = a / (x - b)ⁿ + c)</option>
-                <option value="exponential">Fungsi Eksponensial (y = a^(bx) + c)</option>
-                <option value="absolute">Fungsi Mutlak (y = a|x - b| + c)</option>
-                <option value="step-down">Fungsi Lantai (y = a⌊x - b⌋ + c)</option>
-                <option value="step-up">Fungsi Atap (y = a⌈x - b⌉ + c) </option>
-            </select>
-        </div>
-        <div>
-            <label>Koefisien a: <span id="valA" class="value-display">1</span></label>
-            <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
-        </div>
-        <div>
-            <label>Koefisien b: <span id="valB" class="value-display">0</span></label>
-            <input type="range" id="b" min="-5" max="5" step="0.1" value="0">
-        </div>
-        <div id="cControl" style="display: none;">
-            <label>Koefisien c: <span id="valC" class="value-display">0</span></label>
-            <input type="range" id="c" min="-5" max="5" step="0.1" value="0">
-        </div>
-        <div id="nControl" style="display: none;">
-            <label>Pangkat n: <span id="valN" class="value-display">1</span></label>
-            <input type="range" id="n" min="1" max="5" step="1" value="1">
-        </div>
-    </div>
+    <!-- Wrapper Utama Layout -->
+    <div class="main-layout">
+        
+        <!-- PANEL KIRI: Menu, Rumus, dan Tabel -->
+        <div class="left-panel">
+            <div class="controls">
+                <div class="control-full">
+                    <label for="funcType">Jenis Fungsi:</label>
+                    <select id="funcType">
+                        <option value="linear">Fungsi Linear (y = ax + b)</option>
+                        <option value="quadratic">Fungsi Kuadrat (y = ax² + bx + c)</option>
+                        <option value="rational">Fungsi Rasional (y = a / (x - b)ⁿ + c)</option>
+                        <option value="exponential">Fungsi Eksponensial (y = a^(bx) + c)</option>
+                        <option value="absolute">Fungsi Mutlak (y = a|x - b| + c)</option>
+                        <option value="step-down">Fungsi Lantai (y = a⌊x - b⌋ + c)</option>
+                        <option value="step-up">Fungsi Atap (y = a⌈x - b⌉ + c) </option>
+                    </select>
+                </div>
+                <div>
+                    <label>Koefisien a: <span id="valA" class="value-display">1</span></label>
+                    <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
+                </div>
+                <div>
+                    <label>Koefisien b: <span id="valB" class="value-display">0</span></label>
+                    <input type="range" id="b" min="-5" max="5" step="0.1" value="0">
+                </div>
+                <div id="cControl" style="display: none;">
+                    <label>Koefisien c: <span id="valC" class="value-display">0</span></label>
+                    <input type="range" id="c" min="-5" max="5" step="0.1" value="0">
+                </div>
+                <div id="nControl" style="display: none;">
+                    <label>Pangkat n: <span id="valN" class="value-display">1</span></label>
+                    <input type="range" id="n" min="1" max="5" step="1" value="1">
+                </div>
+            </div>
 
-    <div class="formula-display" id="formula">y = 1x + 0</div>
+            <div class="formula-display" id="formula">y = 1x + 0</div>
 
-    <div class="canvas-container">
-        <canvas id="graphCanvas" width="500" height="500"></canvas>
-    </div>
-    <p class="zoom-hint">💡 Gunakan dua jari (cubit) atau scroll mouse di dalam kotak untuk Zoom In/Out</p>
+            <div class="table-container">
+                <table class="coord-table" id="pointsTable">
+                    <tr id="rowX">
+                        <th>x</th>
+                    </tr>
+                    <tr id="rowY">
+                        <th>y</th>
+                    </tr>
+                </table>
+                <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">* Anda dapat mengetik angka bebas pada kolom X di atas.</p>
+            </div>
+        </div>
+        
+        <!-- PANEL KANAN: Kanvas Grafik -->
+        <div class="right-panel">
+            <div class="canvas-container">
+                <!-- Resolusi internal canvas tetap 500x500 agar grafis tajam, sementara ukurannya responsif karena CSS -->
+                <canvas id="graphCanvas" width="500" height="500"></canvas>
+            </div>
+            <p class="zoom-hint">💡 Gunakan dua jari (cubit) atau scroll mouse di dalam kotak untuk Zoom In/Out</p>
+        </div>
 
-    <!-- Container Tabel Interaktif -->
-    <div class="table-container">
-        <table class="coord-table" id="pointsTable">
-            <tr id="rowX">
-                <th>x</th>
-            </tr>
-            <tr id="rowY">
-                <th>y</th>
-            </tr>
-        </table>
-        <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">* Anda dapat mengetik angka bebas pada kolom X di atas.</p>
     </div>
 </div>
 
@@ -314,61 +361,50 @@
         return null;
     }
 
-    // Fungsi Render Garis & Teks Sumbu
     function drawAxes() {
-        ctx.strokeStyle = '#e0e0e0'; // Warna garis kotak (grid)
+        ctx.strokeStyle = '#e0e0e0'; 
         ctx.lineWidth = 1;
         ctx.font = '12px Arial';
-        ctx.fillStyle = '#666'; // Warna angka
+        ctx.fillStyle = '#666'; 
 
-        // Menentukan kelipatan angka agar tidak berantakan saat dizoom out jauh
         let step = 1;
         if (range > 50) step = 10;
         else if (range > 20) step = 5;
         else if (range > 10) step = 2;
         else if (range < 5) step = 0.5;
 
-        // Ambil batas perulangan grid
         let start = Math.floor(-range);
         let end = Math.ceil(range);
 
         for (let i = start; i <= end; i += (step >= 1 ? 1 : 0.5)) {
-            // Posisi piksel dari titik origin (tengah)
             let px = width / 2 + (i * scale);
             let py = height / 2 - (i * scale);
 
-            // Gambar garis grid tipis (Vertikal dan Horizontal)
             ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, height); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(width, py); ctx.stroke();
 
-            // Gambar label Angka pada kelipatan 'step' yang ditentukan
             if (i % step === 0 && i !== 0) {
-                // Teks Sumbu X (Taruh di bawah garis)
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
                 ctx.fillText(i, px, height / 2 + 5);
 
-                // Teks Sumbu Y (Taruh di kiri garis)
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(i, width / 2 - 5, py);
             }
         }
 
-        // Teks Origin (Angka 0)
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         ctx.fillText('0', width / 2 - 5, height / 2 + 5);
 
-        // Gambar Sumbu Utama (X dan Y) lebih tebal
         ctx.strokeStyle = '#333333';
         ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height); ctx.stroke(); // Y
-        ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); // X
+        ctx.beginPath(); ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height); ctx.stroke(); 
+        ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); 
     }
 
     function drawGraph() {
-        // Update scale berdasarkan jangkauan (range) zoom saat ini
         scale = width / (range * 2);
 
         const type = funcType.value;
@@ -379,7 +415,6 @@
 
         valA.textContent = a; valB.textContent = b; valC.textContent = c; valN.textContent = n;
 
-        // Tampilan Rumus
         if (type === 'linear') {
             cControl.style.display = 'none'; nControl.style.display = 'none';
             formulaDisplay.innerHTML = `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`;
@@ -404,9 +439,8 @@
         }
 
         ctx.clearRect(0, 0, width, height);
-        drawAxes(); // Panggil fungsi drawAxes yang sudah diedit
+        drawAxes(); 
 
-        // Gambar Garis Fungsi
         ctx.beginPath();
         ctx.strokeStyle = '#1a73e8'; 
         ctx.lineWidth = 3;
@@ -414,7 +448,6 @@
         let prevStep = null;
 
         for (let px = 0; px <= width; px++) {
-            // Konversi dari pixel layar ke koordinat matematika
             const mathX = (px - width/2) / scale;
             let mathY = null;
 
@@ -433,7 +466,6 @@
             }
 
             if (mathY !== null) {
-                // Konversi Y dari matematika ke Y layar
                 const py = height / 2 - (mathY * scale);
 
                 if (px === 0 || prevY === null) {
@@ -446,7 +478,6 @@
         }
         ctx.stroke();
 
-        // Kalkulasi Y untuk Tabel & Gambar Titik Tebal
         for (let i = 0; i < xPoints.length; i++) {
             let x = xPoints[i];
             let tdY = document.getElementById(`yVal${i}`);
@@ -463,7 +494,6 @@
             } else {
                 tdY.textContent = Number.isInteger(y) ? y : parseFloat(y.toFixed(2));
 
-                // Hitung posisi titik menggunakan sistem koordinat layar
                 let canvasX = width / 2 + (x * scale);
                 let canvasY = height / 2 - (y * scale);
 
@@ -480,26 +510,19 @@
         }
     }
 
-    // --- EVENT LISTENER UNTUK ZOOM (SCROLL & CUBIT) ---
-
-    // 1. Mouse Wheel Zoom (Scroll pada Desktop)
+    // Event scroll mouse
     canvas.addEventListener('wheel', (e) => {
-        e.preventDefault(); // Mencegah halaman ter-scroll ke bawah saat mouse di atas kanvas
-        
-        let zoomFactor = e.deltaY > 0 ? 1.1 : 0.9; // Scroll bawah = zoom out, Scroll atas = zoom in
+        e.preventDefault(); 
+        let zoomFactor = e.deltaY > 0 ? 1.1 : 0.9; 
         range *= zoomFactor;
-        
-        // Batasi rentang zoom
         range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, range));
-        
         drawGraph();
     });
 
-    // 2. Pinch Zoom (Dua jari pada HP/Tablet)
+    // Event pinch (cubit) layar HP
     canvas.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
             e.preventDefault();
-            // Hitung jarak awal antar jari
             initialPinchDistance = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
@@ -517,13 +540,9 @@
             );
             
             if (initialPinchDistance) {
-                // Skala berdasarkan perbedaan jarak
                 let scaleZoom = initialPinchDistance / currentDistance;
                 range = initialRange * scaleZoom;
-                
-                // Batasi rentang zoom
                 range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, range));
-                
                 drawGraph();
             }
         }
@@ -531,18 +550,16 @@
 
     canvas.addEventListener('touchend', (e) => {
         if (e.touches.length < 2) {
-            initialPinchDistance = null; // Reset saat salah satu/kedua jari dilepas
+            initialPinchDistance = null; 
         }
     });
 
-    // Event listeners untuk slider
     funcType.addEventListener('change', drawGraph);
     inputA.addEventListener('input', drawGraph);
     inputB.addEventListener('input', drawGraph);
     inputC.addEventListener('input', drawGraph);
     inputN.addEventListener('input', drawGraph);
 
-    // Jalankan inisialisasi awal
     initTable();
     drawGraph();
 </script>
