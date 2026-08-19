@@ -181,6 +181,9 @@
                 <option value="linear">Fungsi Linear (y = ax + b)</option>
                 <option value="quadratic">Fungsi Kuadrat (y = ax² + bx + c)</option>
                 <option value="rational">Fungsi Rasional (y = a / (x - b)ⁿ + c)</option>
+                <option value="exponential">Fungsi Eksponensial (y = a · e^(bx) + c)</option>
+                <option value="absolute">Fungsi Mutlak (y = a|x - b| + c)</option>
+                <option value="step">Fungsi Tangga (y = a⌊x - b⌋ + c)</option>
             </select>
         </div>
         <div>
@@ -289,6 +292,12 @@
         } else if (type === 'rational') {
             if (x === b) return '∞'; // Asimtot tegak
             return (a / Math.pow((x - b), n)) + c;
+        } else if (type === 'exponential') {
+            return (a * Math.exp(b * x)) + c;
+        } else if (type === 'absolute') {
+            return (a * Math.abs(x - b)) + c;
+        } else if (type === 'step') {
+            return (a * Math.floor(x - b)) + c;
         }
         return null;
     }
@@ -317,6 +326,18 @@
             cControl.style.display = 'block';
             nControl.style.display = 'block'; 
             formulaDisplay.innerHTML = `y = ${a} / (x ${b >= 0 ? '-' : '+'} ${Math.abs(b)})<sup>${n}</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+        } else if (type === 'exponential') {
+            cControl.style.display = 'block';
+            nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a}e<sup>${b}x</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+        } else if (type === 'absolute') {
+            cControl.style.display = 'block';
+            nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a}|x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}| ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+        } else if (type === 'step') {
+            cControl.style.display = 'block';
+            nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a}⌊x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌋ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
         }
 
         ctx.clearRect(0, 0, width, height);
@@ -327,6 +348,7 @@
         ctx.strokeStyle = '#1a73e8'; 
         ctx.lineWidth = 3;
         let prevY = null;
+        let prevStep = null;
 
         for (let px = 0; px <= width; px++) {
             const mathX = (px / scale) - range;
@@ -342,6 +364,18 @@
                     continue;
                 }
                 mathY = a / Math.pow((mathX - b), n) + c;
+            } else if (type === 'exponential') {
+                mathY = a * Math.exp(b * mathX) + c;
+            } else if (type === 'absolute') {
+                mathY = a * Math.abs(mathX - b) + c;
+            } else if (type === 'step') {
+                let currentStep = Math.floor(mathX - b);
+                // Putuskan garis saat nilai tangga berubah agar tidak muncul garis vertikal
+                if (prevStep !== null && currentStep !== prevStep) {
+                    prevY = null;
+                }
+                prevStep = currentStep;
+                mathY = a * currentStep + c;
             }
 
             if (mathY !== null) {
