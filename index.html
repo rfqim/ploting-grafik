@@ -184,7 +184,8 @@
                 <option value="rational">Fungsi Rasional (y = a / (x - b)ⁿ + c)</option>
                 <option value="exponential">Fungsi Eksponensial (y = a · e^(bx) + c)</option>
                 <option value="absolute">Fungsi Mutlak (y = a|x - b| + c)</option>
-                <option value="step">Fungsi Tangga (y = a⌊x - b⌋ + c)</option>
+                <option value="step-down">Fungsi Lantai (y = a⌊x - b⌋ + c)</option>
+                <option value="step-up">Fungsi Atap (y = a⌈x - b⌉ + c) </option>
             </select>
         </div>
         <div>
@@ -291,14 +292,16 @@
         } else if (type === 'quadratic') {
             return (a * Math.pow(x, 2)) + (b * x) + c;
         } else if (type === 'rational') {
-            if (x === b) return '∞'; // Asimtot tegak
+            if (x === b) return 'undf'; // Asimtot tegak
             return (a / Math.pow((x - b), n)) + c;
         } else if (type === 'exponential') {
-            return (a * Math.exp(b * x)) + c;
+            return (Math.pow(a, b * x)) + c;
         } else if (type === 'absolute') {
             return (a * Math.abs(x - b)) + c;
-        } else if (type === 'step') {
+        } else if (type === 'step-down') {
             return (a * Math.floor(x - b)) + c;
+        } else if (type === 'step-up') {
+            return (a * Math.ceil(x - b)) + c;
         }
         return null;
     }
@@ -335,7 +338,11 @@
             cControl.style.display = 'block';
             nControl.style.display = 'none';
             formulaDisplay.innerHTML = `y = ${a}|x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}| ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
-        } else if (type === 'step') {
+        } else if (type === 'step-down') {
+            cControl.style.display = 'block';
+            nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a}⌊x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌋ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+        } else if (type === 'step-up') {
             cControl.style.display = 'block';
             nControl.style.display = 'none';
             formulaDisplay.innerHTML = `y = ${a}⌊x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}⌋ ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
