@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eksplorasi Grafik Fungsi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f2f5;
+            padding: 10px; 
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background: #ffffff;
+            padding: 15px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #1a73e8;
+            font-size: 1.4rem;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .control-full {
+            grid-column: 1 / -1; 
+        }
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex; 
+            justify-content: space-between; 
+        }
+        select, input[type="range"] {
+            width: 100%;
+            font-size: 16px; 
+            padding: 10px; 
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        input[type="range"] {
+            padding: 0;
+            border: none;
+            height: 30px; 
+        }
+        .value-display {
+            font-weight: 400;
+            color: #d93025;
+        }
+        .formula-display {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px dashed #ccc;
+            overflow-x: auto; 
+            word-break: break-word;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 100%;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            touch-action: none;
+        }
+
+        /* --- STYLING UNTUK TABEL KOORDINAT --- */
+        .table-container {
+            margin-top: 20px;
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .coord-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            background: #ffffff;
+            font-size: 14px;
+        }
+        .coord-table th, .coord-table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px 5px;
+            min-width: 45px;
+        }
+        .coord-table th {
+            background-color: #1a73e8;
+            color: white;
+            font-weight: 600;
+        }
+        .coord-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        @media (min-width: 600px) {
+            body { padding: 20px; }
+            .container { padding: 30px; }
+            .controls { grid-template-columns: 1fr 1fr; }
+            h2 { font-size: 1.8rem; }
+            .formula-display { font-size: 18px; padding: 15px; }
+            .canvas-container { padding-bottom: 0; height: 500px; }
+            .coord-table { font-size: 16px; }
+            .coord-table th, .coord-table td { padding: 12px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Alat Pembuat Grafik Fungsi</h2>
+    
+    <div class="controls">
+        <div class="control-full">
+            <label for="funcType">Jenis Fungsi:</label>
+            <select id="funcType">
+                <option value="linear">Fungsi Linear (y = ax + b)</option>
+                <option value="quadratic">Fungsi Kuadrat (y = ax² + bx + c)</option>
+                <option value="rational">Fungsi Rasional (y = a / (x - b)ⁿ + c)</option>
+            </select>
+        </div>
+        <div>
+            <label>Koefisien a: <span id="valA" class="value-display">1</span></label>
+            <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
+        </div>
+        <div>
+            <label>Koefisien b: <span id="valB" class="value-display">0</span></label>
+            <input type="range" id="b" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div id="cControl" style="display: none;">
+            <label>Koefisien c: <span id="valC" class="value-display">0</span></label>
+            <input type="range" id="c" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div id="nControl" style="display: none;">
+            <label>Pangkat n: <span id="valN" class="value-display">1</span></label>
+            <input type="range" id="n" min="1" max="5" step="1" value="1">
+        </div>
+    </div>
+
+    <div class="formula-display" id="formula">y = 1x + 0</div>
+
+    <div class="canvas-container">
+        <canvas id="graphCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <!-- Container Tabel -->
+    <div class="table-container" id="tableContainer">
+        <!-- Tabel akan di-generate oleh JavaScript di sini -->
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width; 
+    const height = canvas.height; 
+
+    const range = 10;
+    const scale = width / (range * 2);
+
+    const funcType = document.getElementById('funcType');
+    const inputA = document.getElementById('a');
+    const inputB = document.getElementById('b');
+    const inputC = document.getElementById('c');
+    const inputN = document.getElementById('n'); 
+    
+    const valA = document.getElementById('valA');
+    const valB = document.getElementById('valB');
+    const valC = document.getElementById('valC');
+    const valN = document.getElementById('valN');
+    
+    const formulaDisplay = document.getElementById('formula');
+    const cControl = document.getElementById('cControl');
+    const nControl = document.getElementById('nControl');
+    const tableContainer = document.getElementById('tableContainer');
+
+    function drawGraph() {
+        const type = funcType.value;
+        const a = parseFloat(inputA.value);
+        const b = parseFloat(inputB.value);
+        const c = parseFloat(inputC.value);
+        const n = parseInt(inputN.value);
+
+        valA.textContent = a;
+        valB.textContent = b;
+        valC.textContent = c;
+        valN.textContent = n;
+
+        if (type === 'linear') {
+            cControl.style.display = 'none';
+            nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`;
+        } else if (type === 'quadratic') {
+            cControl.style.display = 'block';
+            nControl.style.display = 'none';
+            formulaDisplay.innerHTML = `y = ${a}x² ${b >= 0 ? '+' : '-'} ${Math.abs(b)}x ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+        } else if (type === 'rational') {
+            cControl.style.display = 'block';
+            nControl.style.display = 'block'; 
+            formulaDisplay.innerHTML = `y = ${a} / (x ${b >= 0 ? '-' : '+'} ${Math.abs(b)})<sup>${n}</sup> ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+        }
+
+        // --- UPDATE TABEL KOORDINAT ---
+        updateTable(type, a, b, c, n);
+
+        ctx.clearRect(0, 0, width, height);
+        drawAxes();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#1a73e8'; 
+        ctx.lineWidth = 3;
+
+        let prevY = null;
+
+        for (let px = 0; px <= width; px++) {
+            const mathX = (px / scale) - range;
+            let mathY = null;
+
+            if (type === 'linear') {
+                mathY = a * mathX + b;
+            } else if (type === 'quadratic') {
+                mathY = a * Math.pow(mathX, 2) + b * mathX + c;
+            } else if (type === 'rational') {
+                if (Math.abs(mathX - b) <= 0.05) {
+                    prevY = null;
+                    continue;
+                }
+                mathY = a / Math.pow((mathX - b), n) + c;
+            }
+
+            if (mathY !== null) {
+                const py = height / 2 - (mathY * scale);
+
+                if (px === 0 || prevY === null) {
+                    ctx.moveTo(px, py); 
+                } else {
+                    ctx.lineTo(px, py); 
+                }
+                prevY = py;
+            }
+        }
+        ctx.stroke();
+    }
+
+    function drawAxes() {
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+
+        for (let i = -range; i <= range; i++) {
+            const p = (i + range) * scale;
+            ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(width, p); ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath(); ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height); ctx.stroke(); // Y
+        ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke(); // X
+    }
+
+    // Fungsi untuk membuat dan mengupdate tabel
+    function updateTable(type, a, b, c, n) {
+        const xValues = [-3, -2, -1, 0, 1, 2, 3]; // 7 titik sampel
+        
+        let html = '<table class="coord-table"><tbody>';
+        
+        // Baris X
+        html += '<tr><th>x</th>';
+        for (let x of xValues) {
+            html += `<td>${x}</td>`;
+        }
+        html += '</tr>';
+        
+        // Baris Y
+        html += '<tr><th>y</th>';
+        for (let x of xValues) {
+            let y = 0;
+            
+            if (type === 'linear') {
+                y = (a * x) + b;
+            } else if (type === 'quadratic') {
+                y = (a * Math.pow(x, 2)) + (b * x) + c;
+            } else if (type === 'rational') {
+                if (x === b) {
+                    y = '∞'; // Asimtot tegak
+                } else {
+                    y = (a / Math.pow((x - b), n)) + c;
+                }
+            }
+            
+            // Format angka agar rapi (maksimal 2 desimal jika bukan integer)
+            let displayY = y;
+            if (typeof y === 'number') {
+                displayY = Number.isInteger(y) ? y : parseFloat(y.toFixed(2));
+            }
+            
+            html += `<td>${displayY}</td>`;
+        }
+        html += '</tr></tbody></table>';
+        
+        tableContainer.innerHTML = html;
+    }
+
+    funcType.addEventListener('change', drawGraph);
+    inputA.addEventListener('input', drawGraph);
+    inputB.addEventListener('input', drawGraph);
+    inputC.addEventListener('input', drawGraph);
+    inputN.addEventListener('input', drawGraph);
+
+    drawGraph();
+</script>
+
+</body>
+</html>
