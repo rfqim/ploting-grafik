@@ -64,7 +64,7 @@
             margin-bottom: 8px;
             display: flex; 
             justify-content: space-between; 
-            align-items: center; /* Memastikan teks dan input sejajar vertikal */
+            align-items: center;
         }
         select, input[type="range"] {
             width: 100%;
@@ -239,7 +239,6 @@
                         <option value="step-up">Fungsi Atap (y = a⌈x - b⌉ + c) </option>
                     </select>
                 </div>
-                <!-- Koefisien sekarang bisa diketik dan dislider -->
                 <div>
                     <label>Koefisien a: <input type="number" id="valA" class="num-input" value="1" step="0.1"></label>
                     <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
@@ -269,7 +268,7 @@
                         <th>y</th>
                     </tr>
                 </table>
-                <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">* Masukke nilai X untuk nyingok titik.</p>
+                <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">* Masukkan nilai X untuk melihat titik.</p>
             </div>
         </div>
         
@@ -278,7 +277,7 @@
             <div class="canvas-container">
                 <canvas id="graphCanvas" width="500" height="500"></canvas>
             </div>
-            <p class="zoom-hint">Zoom in/zoom out kalu dak kejingok an</p>
+            <p class="zoom-hint">Zoom in/zoom out kalau tidak kelihatan</p>
         </div>
 
     </div>
@@ -295,7 +294,7 @@
     let scale; 
     let initialPinchDistance = null;
     let initialRange = range;
-    const MIN_RANGE = 2;   
+    const MIN_RANGE = 0.5; // Diturunkan agar bisa menampung skala zoom-in super detail 
     const MAX_RANGE = 100; 
 
     const funcType = document.getElementById('funcType');
@@ -317,13 +316,11 @@
         const slider = document.getElementById(sliderId);
         const numInput = document.getElementById(numId);
         
-        // Jika Slider digeser -> update Input Ketik
         slider.addEventListener('input', () => {
             numInput.value = slider.value;
             drawGraph();
         });
         
-        // Jika Input diketik -> update Slider (jika masuk range)
         numInput.addEventListener('input', () => {
             if (numInput.value !== "") {
                 slider.value = numInput.value;
@@ -332,7 +329,6 @@
         });
     }
 
-    // Terapkan sinkronisasi ke keempat kontrol
     syncControl('a', 'valA');
     syncControl('b', 'valB');
     syncControl('c', 'valC');
@@ -381,43 +377,58 @@
         return null;
     }
 
+    // ==========================================
+    // FUNGSI DRAW AXES REVISI (0.1 & 0.25 SCALING)
+    // ==========================================
     function drawAxes() {
         ctx.strokeStyle = '#e0e0e0'; 
         ctx.lineWidth = 1;
         ctx.font = '12px Arial';
         ctx.fillStyle = '#666'; 
 
+        // Menentukan step (jarak grid) secara dinamis termasuk 0.1 dan 0.25
         let step = 1;
         if (range > 50) step = 10;
         else if (range > 20) step = 5;
         else if (range > 10) step = 2;
+        else if (range <= 1) step = 0.1;     // Skala detail 0.1 saat sangat dekat
+        else if (range <= 2.5) step = 0.25;  // Skala detail 0.25
         else if (range < 5) step = 0.5;
 
-        let start = Math.floor(-range);
-        let end = Math.ceil(range);
+        // Mengatur batas perulangan yang pas dengan kelipatan step
+        let start = Math.floor(-range / step) * step;
+        let end = Math.ceil(range / step) * step;
 
-        for (let i = start; i <= end; i += (step >= 1 ? 1 : 0.5)) {
+        // Melakukan looping melompat sebesar ukuran step secara efisien
+        for (let i = start; i <= end; i += step) {
             let px = width / 2 + (i * scale);
             let py = height / 2 - (i * scale);
 
+            // Gambar garis kisi abu-abu tipis
             ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, height); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(width, py); ctx.stroke();
 
-            if (i % step === 0 && i !== 0) {
+            // Gambar label teks pada sumbu utama
+            if (i !== 0) {
+                // Menghindari problem presisi floating point (misal 0.300000000004)
+                let labelText = Number(i.toFixed(2));
+
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
-                ctx.fillText(i, px, height / 2 + 5);
+                ctx.fillText(labelText, px, height / 2 + 5);
 
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(i, width / 2 - 5, py);
+                ctx.fillText(labelText, width / 2 - 5, py);
             }
         }
 
+        // Gambar Angka 0 di Pusat Koordinat Kartesius
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         ctx.fillText('0', width / 2 - 5, height / 2 + 5);
 
+        // Gambar Sumbu X & Y Utama (Hitam tebal)
         ctx.strokeStyle = '#333333';
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height); ctx.stroke(); 
@@ -428,8 +439,6 @@
         scale = width / (range * 2);
 
         const type = funcType.value;
-        
-        // Membaca nilai dari Input Ketik (Jika kosong atau error, otomatis 0 agar grafik tidak error)
         const a = parseFloat(valA.value) || 0;
         const b = parseFloat(valB.value) || 0;
         const c = parseFloat(valC.value) || 0;
